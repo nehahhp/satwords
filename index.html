@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocab Quiz</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e5e7eb;
+    }
+
+    .quiz-container {
+      width: 100%;
+      max-width: 620px;
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+      border-top: 4px solid #2563eb;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    }
+
+    .quiz-container.correct-glow {
+      border-top-color: #16a34a;
+      box-shadow: 0 12px 30px rgba(22, 163, 74, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .quiz-container.incorrect-glow {
+      border-top-color: #b91c1c;
+      box-shadow: 0 12px 30px rgba(185, 28, 28, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+
+    .quiz-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .quiz-subtitle {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 3px 0 0;
+    }
+
+    .definition-card {
+      margin: 16px 0 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .definition-text {
+      color: #0f172a;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .option-btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      text-align: left;
+      font-size: 14px;
+      cursor: pointer;
+      transition:
+        background 0.18s ease,
+        transform 0.08s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .option-btn:hover {
+      transform: translateY(-1px);
+      background: #f9fafb;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .option-btn.correct {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #14532d;
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+    }
+
+    .option-btn.incorrect {
+      background: #fee2e2;
+      border-color: #b91c1c;
+      color: #7f1d1d;
+      box-shadow: 0 4px 14px rgba(185, 28, 28, 0.3);
+    }
+
+    .option-btn.disabled {
+      cursor: default;
+      opacity: 0.92;
+      transform: none;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      gap: 10px;
+    }
+
+    .feedback {
+      font-size: 14px;
+      min-height: 1.4em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feedback.correct {
+      color: #15803d;
+    }
+
+    .feedback.incorrect {
+      color: #b91c1c;
+    }
+
+    .feedback-pill {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+
+    .feedback-pill.correct-pill {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .feedback-pill.incorrect-pill {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .score {
+      font-size: 12px;
+      color: #64748b;
+      text-align: right;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .next-btn {
+      border: none;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 8px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+    }
+
+    .next-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+
+    .next-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .next-btn:disabled {
+      background: #cbd5f5;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .progress {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: right;
+    }
+
+    .extra-card {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px dashed #cbd5e1;
+      font-size: 13px;
+      color: #111827;
+    }
+
+    .extra-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .extra-row {
+      margin-bottom: 4px;
+    }
+
+    .extra-label-text {
+      font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      .quiz-container {
+        margin: 12px;
+        padding: 18px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quizContainer">
+  <div class="quiz-header">
+    <div>
+      <h1 class="quiz-title">Word Match</h1>
+      <p class="quiz-subtitle">Choose the word that matches the meaning</p>
+    </div>
+    <div>
+      <div class="score" id="score">Score: 0 / 0</div>
+      <div class="progress" id="progress">Accuracy: 0%</div>
+    </div>
+  </div>
+
+  <div class="definition-card">
+    <span class="label">Meaning</span>
+    <div class="definition-text" id="definitionText">
+      <!-- Definition will go here -->
+    </div>
+  </div>
+
+  <div class="options" id="optionsContainer">
+    <!-- Option buttons will go here -->
+  </div>
+
+  <div class="status-row">
+    <div class="feedback" id="feedback"></div>
+    <div class="controls">
+      <button class="next-btn" id="nextBtn" disabled>
+        Next
+        <span aria-hidden="true">›</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="extra-card" id="extraInfo" style="display:none;"></div>
+</div>
+
+<script>
+  // Base word list (same as before)
+  const WORDS = [
+    { word: "exonerate", meaning: "to clear someone of blame or guilt" },
+    { word: "prosperity", meaning: "the state of being successful or wealthy" },
+    { word: "stipend", meaning: "a fixed regular payment, often for work or study" },
+    { word: "ineffable", meaning: "too great or powerful to describe in words" },
+    { word: "halcyon", meaning: "calm, peaceful, and happy" },
+    { word: "coterie", meaning: "a small, close group with shared interests" },
+    { word: "esoteric", meaning: "understood by only a small special group" },
+    { word: "bestow", meaning: "to give something as an honor or gift" },
+    { word: "arid", meaning: "very dry; also dull or boring" },
+    { word: "revitalize", meaning: "to bring new life or energy to something" },
+    { word: "umbrage", meaning: "a feeling of being offended or annoyed" },
+    { word: "perpetuate", meaning: "to keep something going" },
+    { word: "deficient", meaning: "lacking something important" },
+    { word: "exalt", meaning: "to praise highly" },
+    { word: "prudent", meaning: "careful and wise" },
+    { word: "ascertain", meaning: "to find out for sure" },
+    { word: "forensic", meaning: "related to scientific crime investigation" },
+    { word: "entourage", meaning: "a group surrounding an important person" },
+    { word: "invigorate", meaning: "to give strength or energy" },
+    { word: "innocuous", meaning: "harmless" },
+    { word: "foster", meaning: "to help something grow" },
+    { word: "protagonist", meaning: "the main character in a story" },
+    { word: "felicitous", meaning: "well chosen and pleasant" },
+    { word: "rectitude", meaning: "moral honesty" },
+    { word: "prolix", meaning: "using too many words" },
+    { word: "repertory", meaning: "a collection of works" },
+    { word: "neophyte", meaning: "a beginner" },
+    { word: "sheaf", meaning: "a bundle of grain or papers" },
+    { word: "stentorian", meaning: "extremely loud" },
+    { word: "hiatus", meaning: "a pause or break" },
+    { word: "titular", meaning: "having a title only" },
+    { word: "lionize", meaning: "to treat as famous" },
+    { word: "abstemious", meaning: "not eating or drinking much" },
+    { word: "laudable", meaning: "deserving praise" },
+    { word: "valiantly", meaning: "bravely" },
+    { word: "certitude", meaning: "complete certainty" },
+    { word: "ambivalence", meaning: "mixed feelings" },
+    { word: "tapestry", meaning: "a complex combination" },
+    { word: "vascular", meaning: "related to blood vessels" },
+    { word: "iconoclast", meaning: "a person who attacks traditions" },
+    { word: "turgid", meaning: "swollen or overly fancy" },
+    { word: "tact", meaning: "sensitivity in dealing with others without hurting feelings" },
+    { word: "extol", meaning: "to praise highly" },
+    { word: "cohesive", meaning: "sticking together well" },
+    { word: "permutation", meaning: "a different arrangement" },
+    { word: "salubrious", meaning: "healthy or good for you" },
+    { word: "nemesis", meaning: "a long-time rival" },
+    { word: "mellifluous", meaning: "smooth and sweet sounding" },
+    { word: "horde", meaning: "a large crowd" },
+    { word: "untrammeled", meaning: "not restricted" },
+    { word: "monolith", meaning: "a large solid structure" },
+    { word: "posterity", meaning: "future generations" },
+    { word: "recumbent", meaning: "lying down" },
+    { word: "montage", meaning: "a sequence of combined images" },
+    { word: "comatose", meaning: "extremely inactive" },
+    { word: "sartorial", meaning: "related to clothing" },
+    { word: "edify", meaning: "to teach or improve" },
+    { word: "cacophonous", meaning: "full of harsh sounds" },
+    { word: "raconteur", meaning: "a skilled storyteller" },
+    { word: "ancillary", meaning: "supporting" },
+    { word: "verbose", meaning: "using more words than needed" },
+    { word: "amalgamate", meaning: "to combine" },
+    { word: "gobbledygook", meaning: "confusing language" },
+    { word: "arachnid", meaning: "a spider-type animal" },
+    { word: "mangrove", meaning: "a tropical swamp tree" },
+    { word: "furtive", meaning: "secretive" },
+    { word: "gulag", meaning: "a prison labor camp" },
+    { word: "renowned", meaning: "widely known and respected" },
+    { word: "bayou", meaning: "a slow swampy river" },
+    { word: "bivalve", meaning: "a two-shelled animal" },
+    { word: "coxswain", meaning: "a rowing boat leader" },
+    { word: "hawkish", meaning: "favoring aggression" },
+    { word: "dovish", meaning: "favoring peace" },
+    { word: "brouhaha", meaning: "a noisy fuss" },
+    { word: "inedible", meaning: "not safe to eat" },
+    { word: "hackneyed", meaning: "overused" },
+    { word: "canopy", meaning: "a roof-like covering" },
+    { word: "emulsify", meaning: "to mix liquids" },
+    { word: "doldrums", meaning: "a low-energy state" },
+    { word: "clamorous", meaning: "loud and demanding" },
+    { word: "solarium", meaning: "a sunroom" },
+    { word: "hirsute", meaning: "very hairy" },
+    { word: "manga", meaning: "Japanese comics" },
+    { word: "mystify", meaning: "to confuse" },
+    { word: "lagniappe", meaning: "a small free bonus" },
+    { word: "skulduggery", meaning: "dishonest behavior" },
+    { word: "hydroponic", meaning: "growing plants in water" },
+    { word: "simile", meaning: "a comparison using like or as" },
+    { word: "piquancy", meaning: "pleasant sharpness" },
+    { word: "pacify", meaning: "to calm" },
+    { word: "rapscallion", meaning: "a mischievous person" },
+    { word: "waggish", meaning: "playfully humorous" },
+    { word: "pungent", meaning: "strong in smell or taste" },
+    { word: "sublimity", meaning: "great beauty or excellence" },
+    { word: "vexatious", meaning: "annoying" },
+    { word: "kitschy", meaning: "cheap and showy" },
+    { word: "humility", meaning: "modesty" },
+    { word: "taqueria", meaning: "a taco restaurant" },
+    { word: "whimsical", meaning: "playful and imaginative" },
+    { word: "perimeter", meaning: "the outer boundary" },
+    { word: "fawning", meaning: "overly flattering" },
+    { word: "woebegone", meaning: "sad-looking" },
+    { word: "tchotchke", meaning: "a small decorative object" },
+    { word: "spectral", meaning: "ghost-like" },
+    { word: "exogenous", meaning: "coming from outside" },
+    { word: "retrench", meaning: "to cut back" },
+    { word: "ornithologist", meaning: "a bird scientist" },
+    { word: "taciturn", meaning: "quiet and reserved" },
+    { word: "wunderkind", meaning: "a gifted young person" },
+    { word: "topple", meaning: "to fall over" },
+    { word: "ebullient", meaning: "full of energy" },
+    { word: "aspirant", meaning: "a person seeking a role" },
+    { word: "stultify", meaning: "to make dull" },
+    { word: "intransigent", meaning: "unwilling to compromise" },
+    { word: "aqueous", meaning: "watery" },
+    { word: "mycologist", meaning: "a fungi scientist" },
+    { word: "unctuous", meaning: "overly flattering" },
+    { word: "solipsism", meaning: "belief that only the self exists" },
+    { word: "tempestuous", meaning: "full of conflict" },
+    { word: "besmirch", meaning: "to damage reputation" },
+    { word: "gimmick", meaning: "a trick to attract attention" },
+    { word: "horticulturalist", meaning: "a plant-growing expert" },
+    { word: "pedagogue", meaning: "a teacher" },
+    { word: "ransack", meaning: "to search violently" },
+    { word: "askance", meaning: "with suspicion" },
+    { word: "vibrant", meaning: "full of life, color, or energy" },
+    { word: "impolitic", meaning: "unwise" },
+    { word: "scrupulously", meaning: "very carefully and honestly" },
+    { word: "proscenium", meaning: "front of a stage" },
+    { word: "ephemeral", meaning: "lasting for a very short time" },
+    { word: "guffaw", meaning: "a loud, hearty laugh" },
+    { word: "unequivocal", meaning: "completely clear" },
+    { word: "sabbatical", meaning: "a break from work" },
+    { word: "pseudonym", meaning: "a fake name" },
+    { word: "serendipitous", meaning: "a lucky discovery" },
+    { word: "vogue", meaning: "fashionable" },
+    { word: "rumination", meaning: "deep thinking" },
+    { word: "runic", meaning: "mysterious symbols" },
+    { word: "begrudge", meaning: "to resent giving" },
+    { word: "simulacrum", meaning: "a copy or imitation" },
+    { word: "enshrine", meaning: "to honor and protect" },
+    { word: "tetchy", meaning: "easily annoyed" },
+    { word: "reverberation", meaning: "an echo" },
+    { word: "chortle", meaning: "a joyful chuckle" },
+    { word: "tureen", meaning: "a soup serving bowl" },
+    { word: "soporific", meaning: "sleep-inducing" },
+    { word: "invective", meaning: "harsh language" },
+    { word: "vermilion", meaning: "bright red" },
+    { word: "coniferous", meaning: "cone-bearing trees" },
+    { word: "dormant", meaning: "inactive but alive" },
+    { word: "artisanal", meaning: "handcrafted" },
+    { word: "fortify", meaning: "to strengthen" },
+    { word: "salinity", meaning: "salt content" },
+    { word: "flaxen", meaning: "pale yellow" },
+    { word: "rapprochement", meaning: "renewed friendship" },
+    { word: "profusely", meaning: "in large amounts" },
+    { word: "impropriety", meaning: "bad behavior" },
+    { word: "simpatico", meaning: "likeable" },
+    { word: "quizzical", meaning: "curiously puzzled" },
+    { word: "spacewalk", meaning: "an astronaut walking in space" }
+  ];
+
+  // Extra info: example sentence + synonyms for many words
+  const EXTRA = {
+  exonerate: {
+    example: "The new evidence helped exonerate the wrongly accused student.",
+    synonyms: ["absolve", "clear", "vindicate"]
+  },
+  prosperity: {
+    example: "The town enjoyed years of prosperity after the factory opened.",
+    synonyms: ["wealth", "success", "affluence"]
+  },
+  stipend: {
+    example: "She received a small stipend for her internship at the museum.",
+    synonyms: ["allowance", "salary", "payment"]
+  },
+  ineffable: {
+    example: "The beauty of the night sky was ineffable.",
+    synonyms: ["indescribable", "inexpressible"]
+  },
+  halcyon: {
+    example: "He often thinks back on the halcyon days of his childhood.",
+    synonyms: ["peaceful", "calm", "golden"]
+  },
+  coterie: {
+    example: "She belongs to a coterie of writers who meet every weekend.",
+    synonyms: ["circle", "group", "clique"]
+  },
+  esoteric: {
+    example: "The professor's lecture was so esoteric that few students understood it.",
+    synonyms: ["obscure", "arcane", "recondite"]
+  },
+  bestow: {
+    example: "The university will bestow an honorary degree on her this year.",
+    synonyms: ["grant", "confer", "give"]
+  },
+  arid: {
+    example: "Few plants can grow in such an arid desert climate.",
+    synonyms: ["dry", "parched", "barren"]
+  },
+  revitalize: {
+    example: "The new community center helped revitalize the neighborhood.",
+    synonyms: ["rejuvenate", "refresh", "renew"]
+  },
+  umbrage: {
+    example: "He took umbrage at her careless remark.",
+    synonyms: ["offense", "resentment"]
+  },
+  perpetuate: {
+    example: "The rumor helped perpetuate a negative stereotype.",
+    synonyms: ["sustain", "maintain", "prolong"]
+  },
+  deficient: {
+    example: "The report was deficient in important details.",
+    synonyms: ["lacking", "insufficient", "incomplete"]
+  },
+  exalt: {
+    example: "They exalted the hero for his bravery.",
+    synonyms: ["praise", "glorify", "celebrate"]
+  },
+  prudent: {
+    example: "It is prudent to save money for emergencies.",
+    synonyms: ["wise", "careful", "sensible"]
+  },
+  ascertain: {
+    example: "The doctor ran tests to ascertain the cause of her illness.",
+    synonyms: ["determine", "find out", "discover"]
+  },
+  forensic: {
+    example: "Forensic scientists examined the fingerprints at the crime scene.",
+    synonyms: ["legal-scientific", "crime-lab"]
+  },
+  entourage: {
+    example: "The singer arrived with a large entourage of assistants and friends.",
+    synonyms: ["retinue", "group", "company"]
+  },
+  invigorate: {
+    example: "A cold shower in the morning can invigorate you for the day.",
+    synonyms: ["energize", "refresh", "stimulate"]
+  },
+  innocuous: {
+    example: "Her comment seemed innocuous, but it still hurt his feelings.",
+    synonyms: ["harmless", "inoffensive", "mild"]
+  },
+  foster: {
+    example: "Good teachers foster a love of learning in their students.",
+    synonyms: ["encourage", "nurture", "promote"]
+  },
+  protagonist: {
+    example: "The protagonist of the novel learns to stand up for herself.",
+    synonyms: ["main character", "hero"]
+  },
+  felicitous: {
+    example: "Her felicitous choice of words made the speech memorable.",
+    synonyms: ["apt", "well-chosen", "appropriate"]
+  },
+  rectitude: {
+    example: "His reputation for rectitude made him widely trusted.",
+    synonyms: ["integrity", "uprightness", "honesty"]
+  },
+  prolix: {
+    example: "The essay was so prolix that many readers gave up halfway.",
+    synonyms: ["wordy", "long-winded", "verbose"]
+  },
+  repertory: {
+    example: "The theater's repertory includes both classics and new plays.",
+    synonyms: ["collection", "catalogue", "inventory"]
+  },
+  neophyte: {
+    example: "As a neophyte programmer, she still had a lot to learn.",
+    synonyms: ["beginner", "novice", "newcomer"]
+  },
+  sheaf: {
+    example: "He carried a sheaf of papers under his arm.",
+    synonyms: ["bundle", "stack", "pile"]
+  },
+  stentorian: {
+    example: "The coach's stentorian voice could be heard across the field.",
+    synonyms: ["loud", "booming", "thunderous"]
+  },
+  hiatus: {
+    example: "The show returned after a brief hiatus.",
+    synonyms: ["break", "pause", "gap"]
+  },
+  titular: {
+    example: "She is the titular leader of the group but has little real power.",
+    synonyms: ["in-name-only", "nominal"]
+  },
+  lionize: {
+    example: "The press began to lionize the young athlete after her victory.",
+    synonyms: ["celebrate", "idolize", "glorify"]
+  },
+  abstemious: {
+    example: "He lived an abstemious life, avoiding rich foods and alcohol.",
+    synonyms: ["self-denying", "moderate", "restrained"]
+  },
+  laudable: {
+    example: "Her efforts to help the poor are truly laudable.",
+    synonyms: ["praiseworthy", "admirable", "commendable"]
+  },
+  valiantly: {
+    example: "The firefighters worked valiantly to control the blaze.",
+    synonyms: ["bravely", "courageously", "heroically"]
+  },
+  certitude: {
+    example: "She spoke with certitude about her decision.",
+    synonyms: ["certainty", "confidence", "conviction"]
+  },
+  ambivalence: {
+    example: "He felt ambivalence about moving away from home.",
+    synonyms: ["mixed feelings", "uncertainty"]
+  },
+  tapestry: {
+    example: "The city's history is a tapestry of many cultures.",
+    synonyms: ["mosaic", "patchwork", "complex weave"]
+  },
+  vascular: {
+    example: "The doctor explained that the problem was in the vascular system.",
+    synonyms: ["related to blood vessels", "circulatory"]
+  },
+  iconoclast: {
+    example: "As an iconoclast, she questioned long-held traditions.",
+    synonyms: ["rebel", "nonconformist", "heretic"]
+  },
+  turgid: {
+    example: "The turgid speech was full of unnecessary big words.",
+    synonyms: ["inflated", "overblown", "bombastic"]
+  },
+  tact: {
+    example: "He handled the sensitive topic with great tact.",
+    synonyms: ["diplomacy", "sensitivity", "discretion"]
+  },
+  extol: {
+    example: "They extolled her kindness in their speeches.",
+    synonyms: ["praise", "commend", "celebrate"]
+  },
+  cohesive: {
+    example: "The team was cohesive and worked well together.",
+    synonyms: ["unified", "connected", "harmonious"]
+  },
+  permutation: {
+    example: "We considered every permutation of possible outcomes.",
+    synonyms: ["arrangement", "variation", "combination"]
+  },
+  salubrious: {
+    example: "They moved to a more salubrious climate.",
+    synonyms: ["healthy", "wholesome", "beneficial"]
+  },
+  nemesis: {
+    example: "In the series, the hero finally defeats his nemesis.",
+    synonyms: ["archenemy", "foe", "rival"]
+  },
+  mellifluous: {
+    example: "Her mellifluous singing filled the room.",
+    synonyms: ["sweet", "smooth", "honeyed"]
+  },
+  horde: {
+    example: "A horde of tourists crowded the small street.",
+    synonyms: ["crowd", "throng", "swarm"]
+  },
+  untrammeled: {
+    example: "He enjoyed running through the untrammeled wilderness.",
+    synonyms: ["unrestricted", "unrestrained", "free"]
+  },
+  monolith: {
+    example: "The company once seemed like a single unshakable monolith.",
+    synonyms: ["giant", "block", "massive structure"]
+  },
+  posterity: {
+    example: "They planted trees for the benefit of posterity.",
+    synonyms: ["future generations", "descendants"]
+  },
+  recumbent: {
+    example: "The dog lay recumbent on the rug, fast asleep.",
+    synonyms: ["lying", "reclining"]
+  },
+  montage: {
+    example: "The film opened with a montage of city scenes.",
+    synonyms: ["collage", "sequence", "mix"]
+  },
+  comatose: {
+    example: "He lay comatose in the hospital for weeks.",
+    synonyms: ["unconscious", "unresponsive"]
+  },
+  sartorial: {
+    example: "His sartorial choices were always sharp and stylish.",
+    synonyms: ["relating to clothing", "fashion-related"]
+  },
+  edify: {
+    example: "Good books can edify as well as entertain.",
+    synonyms: ["educate", "enlighten", "teach"]
+  },
+  cacophonous: {
+    example: "The traffic created a cacophonous noise outside.",
+    synonyms: ["discordant", "harsh", "noisy"]
+  },
+  raconteur: {
+    example: "He was a gifted raconteur who kept everyone laughing.",
+    synonyms: ["storyteller", "narrator"]
+  },
+  ancillary: {
+    example: "The company offers ancillary services like tech support.",
+    synonyms: ["supporting", "secondary", "supplementary"]
+  },
+  verbose: {
+    example: "Her essay was clear but a little too verbose.",
+    synonyms: ["wordy", "long-winded"]
+  },
+  amalgamate: {
+    example: "The two companies decided to amalgamate into one.",
+    synonyms: ["merge", "combine", "unite"]
+  },
+  gobbledygook: {
+    example: "The technical manual was full of gobbledygook.",
+    synonyms: ["nonsense", "jargon", "babble"]
+  },
+  arachnid: {
+    example: "A spider is an example of an arachnid.",
+    synonyms: ["spider-type creature", "eight-legged arthropod"]
+  },
+  mangrove: {
+    example: "Many fish live among the roots of the mangrove trees.",
+    synonyms: ["tropical swamp tree"]
+  },
+  furtive: {
+    example: "She cast a furtive glance at the clock.",
+    synonyms: ["secretive", "sly", "stealthy"]
+  },
+  gulag: {
+    example: "The novel tells the story of life in a Soviet gulag.",
+    synonyms: ["labor camp", "prison camp"]
+  },
+  renowned: {
+    example: "The scientist is renowned for her cancer research.",
+    synonyms: ["famous", "well-known", "celebrated"]
+  },
+  bayou: {
+    example: "They paddled slowly down the quiet bayou.",
+    synonyms: ["marshy river", "swamp stream"]
+  },
+  bivalve: {
+    example: "The oyster is a type of bivalve.",
+    synonyms: ["two-shelled mollusk"]
+  },
+  coxswain: {
+    example: "The coxswain shouted instructions to the rowing team.",
+    synonyms: ["boat leader", "rowing captain"]
+  },
+  hawkish: {
+    example: "His hawkish views made him support military action.",
+    synonyms: ["aggressive", "pro-war"]
+  },
+  dovish: {
+    example: "The dovish senator argued for peaceful solutions.",
+    synonyms: ["peaceful", "pacifist", "nonaggressive"]
+  },
+  brouhaha: {
+    example: "There was quite a brouhaha over the new policy.",
+    synonyms: ["uproar", "fuss", "commotion"]
+  },
+  inedible: {
+    example: "The burnt cake was practically inedible.",
+    synonyms: ["not eatable", "unpalatable"]
+  },
+  hackneyed: {
+    example: "The speech was full of hackneyed phrases.",
+    synonyms: ["overused", "clichéd", "trite"]
+  },
+  canopy: {
+    example: "Trees formed a shady canopy over the trail.",
+    synonyms: ["covering", "overhead shelter"]
+  },
+  emulsify: {
+    example: "Use a whisk to emulsify the oil and vinegar.",
+    synonyms: ["blend", "mix", "combine"]
+  },
+  doldrums: {
+    example: "He felt stuck in the doldrums after losing his job.",
+    synonyms: ["slump", "depression", "low spirits"]
+  },
+  clamorous: {
+    example: "The clamorous crowd cheered for the band.",
+    synonyms: ["noisy", "loud", "rowdy"]
+  },
+  solarium: {
+    example: "They ate breakfast in the bright solarium.",
+    synonyms: ["sunroom", "glass room"]
+  },
+  hirsute: {
+    example: "The hirsute man had a thick beard and long hair.",
+    synonyms: ["hairy", "shaggy"]
+  },
+  manga: {
+    example: "She spends weekends reading her favorite manga.",
+    synonyms: ["Japanese comics", "graphic novels"]
+  },
+  mystify: {
+    example: "The magician’s tricks mystify the audience.",
+    synonyms: ["confuse", "puzzle", "bewilder"]
+  },
+  lagniappe: {
+    example: "The free dessert was a pleasant lagniappe after the meal.",
+    synonyms: ["bonus", "extra", "perk"]
+  },
+  skulduggery: {
+    example: "The campaign was marred by political skulduggery.",
+    synonyms: ["trickery", "dishonesty", "underhandedness"]
+  },
+  hydroponic: {
+    example: "They grow lettuce in a hydroponic greenhouse.",
+    synonyms: ["soil-free growing", "water-based cultivation"]
+  },
+  simile: {
+    example: "The sentence 'cold as ice' is a simile.",
+    synonyms: ["comparison", "figure of speech"]
+  },
+  piquancy: {
+    example: "The salsa had a pleasant piquancy.",
+    synonyms: ["spiciness", "tang", "zest"]
+  },
+  pacify: {
+    example: "She tried to pacify the crying baby.",
+    synonyms: ["calm", "soothe", "quiet"]
+  },
+  rapscallion: {
+    example: "The kid was a charming little rapscallion.",
+    synonyms: ["rascal", "scamp", "troublemaker"]
+  },
+  waggish: {
+    example: "His waggish comments kept the class laughing.",
+    synonyms: ["playful", "joking", "mischievous"]
+  },
+  pungent: {
+    example: "The cheese had a pungent smell.",
+    synonyms: ["strong", "sharp", "acrid"]
+  },
+  sublimity: {
+    example: "The sublimity of the mountains left them speechless.",
+    synonyms: ["grandeur", "loftiness", "majesty"]
+  },
+  vexatious: {
+    example: "The constant delays were vexatious.",
+    synonyms: ["annoying", "irritating", "troublesome"]
+  },
+  kitschy: {
+    example: "The room was full of kitschy souvenirs.",
+    synonyms: ["tacky", "gaudy", "cheap-looking"]
+  },
+  humility: {
+    example: "Her humility made her success even more impressive.",
+    synonyms: ["modesty", "meekness"]
+  },
+  taqueria: {
+    example: "We grabbed lunch at a small taqueria downtown.",
+    synonyms: ["taco shop", "Mexican eatery"]
+  },
+  whimsical: {
+    example: "The whimsical drawings made the book delightful.",
+    synonyms: ["playful", "fanciful", "quirky"]
+  },
+  perimeter: {
+    example: "They walked around the perimeter of the field.",
+    synonyms: ["boundary", "edge", "border"]
+  },
+  fawning: {
+    example: "His fawning behavior toward the boss annoyed his coworkers.",
+    synonyms: ["flattering", "sycophantic"]
+  },
+  woebegone: {
+    example: "The dog looked woebegone in the rain.",
+    synonyms: ["sad", "miserable", "forlorn"]
+  },
+  tchotchke: {
+    example: "Her shelf was crowded with little tchotchkes.",
+    synonyms: ["trinket", "knickknack", "souvenir"]
+  },
+  spectral: {
+    example: "A spectral figure seemed to move in the fog.",
+    synonyms: ["ghostly", "eerie"]
+  },
+  exogenous: {
+    example: "The doctor said the condition was caused by exogenous factors.",
+    synonyms: ["external", "outside"]
+  },
+  retrench: {
+    example: "The company had to retrench and cut costs.",
+    synonyms: ["cut back", "reduce", "tighten"]
+  },
+  ornithologist: {
+    example: "The ornithologist spent hours observing birds in the wild.",
+    synonyms: ["bird scientist", "bird expert"]
+  },
+  taciturn: {
+    example: "He was a taciturn man who rarely spoke.",
+    synonyms: ["quiet", "reserved", "silent"]
+  },
+  wunderkind: {
+    example: "The young pianist was hailed as a musical wunderkind.",
+    synonyms: ["child prodigy", "genius"]
+  },
+  topple: {
+    example: "A strong wind could topple the old fence.",
+    synonyms: ["overturn", "knock over", "fall"]
+  },
+  ebullient: {
+    example: "Her ebullient personality brightened the whole room.",
+    synonyms: ["enthusiastic", "bubbly", "lively"]
+  },
+  aspirant: {
+    example: "Each aspirant hoped to win the scholarship.",
+    synonyms: ["candidate", "hopeful", "seeker"]
+  },
+  stultify: {
+    example: "Endless busywork can stultify students' creativity.",
+    synonyms: ["dull", "stifle", "suppress"]
+  },
+  intransigent: {
+    example: "They remained intransigent and refused to compromise.",
+    synonyms: ["stubborn", "unyielding", "rigid"]
+  },
+  aqueous: {
+    example: "The chemist stored the aqueous solution in a clear bottle.",
+    synonyms: ["watery", "liquid"]
+  },
+  mycologist: {
+    example: "The mycologist studied the mushrooms' growth patterns.",
+    synonyms: ["fungus expert", "fungi scientist"]
+  },
+  unctuous: {
+    example: "His unctuous compliments made her uneasy.",
+    synonyms: ["oily", "insincere", "smarmy"]
+  },
+  solipsism: {
+    example: "His extreme solipsism made him doubt everyone else’s reality.",
+    synonyms: ["self-centered philosophy", "egocentrism"]
+  },
+  tempestuous: {
+    example: "They had a tempestuous relationship full of arguments.",
+    synonyms: ["stormy", "turbulent", "intense"]
+  },
+  besmirch: {
+    example: "The scandal threatened to besmirch her good name.",
+    synonyms: ["stain", "sully", "tarnish"]
+  },
+  gimmick: {
+    example: "The flashy ad was just a marketing gimmick.",
+    synonyms: ["trick", "ploy", "stunt"]
+  },
+  horticulturalist: {
+    example: "The horticulturalist advised them on how to care for the plants.",
+    synonyms: ["garden expert", "plant specialist"]
+  },
+  pedagogue: {
+    example: "The strict pedagogue insisted on perfect grammar.",
+    synonyms: ["teacher", "educator", "instructor"]
+  },
+  ransack: {
+    example: "Burglars ransack the house in the movie.",
+    synonyms: ["plunder", "loot", "search violently"]
+  },
+  askance: {
+    example: "She looked askance at his strange outfit.",
+    synonyms: ["suspiciously", "doubtfully"]
+  },
+  vibrant: {
+    example: "The city has a vibrant arts scene.",
+    synonyms: ["lively", "energetic", "colorful"]
+  },
+  impolitic: {
+    example: "It was impolitic of him to joke about that topic.",
+    synonyms: ["unwise", "tactless", "ill-judged"]
+  },
+  scrupulously: {
+    example: "She scrupulously checked every detail of the contract.",
+    synonyms: ["carefully", "meticulously", "honestly"]
+  },
+  proscenium: {
+    example: "The actors stood at the edge of the proscenium.",
+    synonyms: ["front of the stage", "stage arch"]
+  },
+  ephemeral: {
+    example: "The rainbow was beautiful but ephemeral.",
+    synonyms: ["short-lived", "brief", "fleeting"]
+  },
+  guffaw: {
+    example: "The joke made the whole class guffaw.",
+    synonyms: ["roar", "burst of laughter"]
+  },
+  unequivocal: {
+    example: "Her answer was an unequivocal yes.",
+    synonyms: ["clear", "definite", "unambiguous"]
+  },
+  sabbatical: {
+    example: "The professor took a sabbatical to focus on research.",
+    synonyms: ["break", "leave", "hiatus"]
+  },
+  pseudonym: {
+    example: "The author wrote under a pseudonym.",
+    synonyms: ["pen name", "alias"]
+  },
+  serendipitous: {
+    example: "Their meeting at the airport was completely serendipitous.",
+    synonyms: ["fortunate", "lucky", "chance"]
+  },
+  vogue: {
+    example: "Minimalist design is in vogue right now.",
+    synonyms: ["fashion", "trend", "style"]
+  },
+  rumination: {
+    example: "Late at night, he fell into deep rumination about his future.",
+    synonyms: ["reflection", "thought", "contemplation"]
+  },
+  runic: {
+    example: "The stone was covered in strange runic symbols.",
+    synonyms: ["mysterious", "ancient-symbolic"]
+  },
+  begrudge: {
+    example: "She did not begrudge her friend the success.",
+    synonyms: ["resent", "envy"]
+  },
+  simulacrum: {
+    example: "The virtual world was a simulacrum of real life.",
+    synonyms: ["imitation", "copy", "representation"]
+  },
+  enshrine: {
+    example: "The laws enshrine basic human rights.",
+    synonyms: ["preserve", "honor", "protect"]
+  },
+  tetchy: {
+    example: "Lack of sleep made him tetchy and impatient.",
+    synonyms: ["irritable", "touchy", "easily annoyed"]
+  },
+  reverberation: {
+    example: "The sound of the bell had a long reverberation.",
+    synonyms: ["echo", "resonance"]
+  },
+  chortle: {
+    example: "The baby began to chortle at the funny face.",
+    synonyms: ["chuckle", "giggle", "laugh"]
+  },
+  tureen: {
+    example: "She served the soup from a large tureen.",
+    synonyms: ["serving bowl", "soup dish"]
+  },
+  soporific: {
+    example: "The lecture was so soporific that several students nodded off.",
+    synonyms: ["sleep-inducing", "drowsy", "boring"]
+  },
+  invective: {
+    example: "The angry comment section was full of invective.",
+    synonyms: ["abuse", "insults", "harsh language"]
+  },
+  vermilion: {
+    example: "She painted the door a bright vermilion color.",
+    synonyms: ["scarlet", "bright red"]
+  },
+  coniferous: {
+    example: "The forest is mostly coniferous trees.",
+    synonyms: ["cone-bearing", "evergreen"]
+  },
+  dormant: {
+    example: "The volcano has been dormant for centuries.",
+    synonyms: ["inactive", "asleep", "latent"]
+  },
+  artisanal: {
+    example: "We bought some artisanal bread from the local bakery.",
+    synonyms: ["handcrafted", "small-batch"]
+  },
+  fortify: {
+    example: "They built high walls to fortify the town.",
+    synonyms: ["strengthen", "reinforce", "secure"]
+  },
+  salinity: {
+    example: "Scientists measured the salinity of the seawater.",
+    synonyms: ["salt level", "saltiness"]
+  },
+  flaxen: {
+    example: "The child had soft, flaxen hair.",
+    synonyms: ["pale blond", "yellowish"]
+  },
+  rapprochement: {
+    example: "The two nations worked toward a fragile rapprochement.",
+    synonyms: ["reconciliation", "renewed friendship"]
+  },
+  profusely: {
+    example: "She thanked her teacher profusely for the help.",
+    synonyms: ["abundantly", "greatly", "lavishly"]
+  },
+  impropriety: {
+    example: "He was fired after allegations of impropriety.",
+    synonyms: ["misconduct", "wrongdoing", "indecency"]
+  },
+  simpatico: {
+    example: "She found her coworker immediately simpatico.",
+    synonyms: ["likable", "compatible", "in tune"]
+  },
+  quizzical: {
+    example: "She gave him a quizzical look.",
+    synonyms: ["puzzled", "questioning", "curious"]
+  },
+  spacewalk: {
+    example: "The astronaut performed a spacewalk to repair the satellite.",
+    synonyms: ["extravehicular activity", "EVA"]
+  }
+};
+
+  const quizContainerEl = document.getElementById("quizContainer");
+  const definitionTextEl = document.getElementById("definitionText");
+  const optionsContainerEl = document.getElementById("optionsContainer");
+  const feedbackEl = document.getElementById("feedback");
+  const scoreEl = document.getElementById("score");
+  const progressEl = document.getElementById("progress");
+  const nextBtn = document.getElementById("nextBtn");
+  const extraInfoEl = document.getElementById("extraInfo");
+
+  let currentCorrectWord = null;
+  let totalQuestions = 0;
+  let correctAnswers = 0;
+  let questionActive = true;
+
+  function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function updateScoreUI() {
+    scoreEl.textContent = `Score: ${correctAnswers} / ${totalQuestions}`;
+    const accuracy = totalQuestions === 0
+      ? 0
+      : Math.round((correctAnswers / totalQuestions) * 100);
+    progressEl.textContent = `Accuracy: ${accuracy}%`;
+  }
+
+  function clearGlow() {
+    quizContainerEl.classList.remove("correct-glow", "incorrect-glow");
+  }
+
+  function clearExtra() {
+    extraInfoEl.style.display = "none";
+    extraInfoEl.innerHTML = "";
+  }
+
+function showExtra(word) {
+  const data = EXTRA[word];
+
+  let sentence = "";
+  let synonyms = "";
+
+  if (data) {
+    sentence = data.example;
+    synonyms = data.synonyms.join(", ");
+  } else {
+    // Auto fallback for ALL other words
+    sentence = `The student tried to use the word "${word}" correctly in a sentence.`;
+    synonyms = "similar meaning, related word";
+  }
+
+  extraInfoEl.style.display = "block";
+  extraInfoEl.innerHTML = `
+    <div class="extra-title">Use this word</div>
+    <div class="extra-row">
+      <span class="extra-label-text">Sentence:</span>
+      <span> ${sentence}</span>
+    </div>
+    <div class="extra-row">
+      <span class="extra-label-text">Synonyms:</span>
+      <span> ${synonyms}</span>
+    </div>
+  `;
+}
+
+  function pickQuestion() {
+    if (WORDS.length < 5) {
+      definitionTextEl.textContent = "Need at least 5 words to run this quiz.";
+      return;
+    }
+
+    questionActive = true;
+    nextBtn.disabled = true;
+    clearGlow();
+    clearExtra();
+
+    feedbackEl.textContent = "";
+    feedbackEl.className = "feedback";
+
+    const correctIndex = Math.floor(Math.random() * WORDS.length);
+    currentCorrectWord = WORDS[correctIndex];
+
+    const others = WORDS.filter((_, idx) => idx !== correctIndex);
+    const shuffledOthers = shuffleArray(others).slice(0, 4);
+
+    const allOptions = shuffleArray([currentCorrectWord, ...shuffledOthers]);
+
+    definitionTextEl.textContent = currentCorrectWord.meaning;
+
+    optionsContainerEl.innerHTML = "";
+    allOptions.forEach(option => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.textContent = option.word;
+      btn.addEventListener("click", () => handleOptionClick(btn, option));
+      optionsContainerEl.appendChild(btn);
+    });
+  }
+
+  function handleOptionClick(button, chosenWord) {
+    if (!questionActive) return;
+
+    const optionButtons = Array.from(
+      optionsContainerEl.querySelectorAll(".option-btn")
+    );
+
+    questionActive = false;
+    totalQuestions++;
+
+    optionButtons.forEach(b => b.classList.add("disabled"));
+
+    clearGlow();
+    feedbackEl.innerHTML = "";
+    const pill = document.createElement("span");
+    pill.classList.add("feedback-pill");
+
+    if (chosenWord.word === currentCorrectWord.word) {
+      correctAnswers++;
+      button.classList.add("correct");
+      feedbackEl.className = "feedback correct";
+      pill.classList.add("correct-pill");
+      pill.textContent = "Correct";
+      feedbackEl.appendChild(pill);
+      const textNode = document.createTextNode(" Nice job.");
+      feedbackEl.appendChild(textNode);
+      quizContainerEl.classList.add("correct-glow");
+    } else {
+      button.classList.add("incorrect");
+      feedbackEl.className = "feedback incorrect";
+      pill.classList.add("incorrect-pill");
+      pill.textContent = "Incorrect";
+      feedbackEl.appendChild(pill);
+      const textNode = document.createTextNode(
+        ` The correct word is "${currentCorrectWord.word}".`
+      );
+      feedbackEl.appendChild(textNode);
+      optionButtons.forEach(b => {
+        if (b.textContent === currentCorrectWord.word) {
+          b.classList.add("correct");
+        }
+      });
+      quizContainerEl.classList.add("incorrect-glow");
+    }
+
+    // Show example + synonyms for the correct word (whether they got it right or wrong)
+    showExtra(currentCorrectWord.word);
+
+    updateScoreUI();
+    nextBtn.disabled = false;
+  }
+
+  nextBtn.addEventListener("click", () => {
+    pickQuestion();
+  });
+
+  // First question
+  pickQuestion();
+  updateScoreUI();
+</script>
+
+</body>
+</html>
